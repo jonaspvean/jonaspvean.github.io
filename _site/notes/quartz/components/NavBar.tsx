@@ -7,7 +7,7 @@ interface Options {
   }
 
 export default ((opts?: Options) => {
-    const NavBar: QuartzComponent = ({ displayClass, cfg }: QuartzComponentsProps) => {
+    const NavBar: QuartzComponent = ({ displayClass, cfg }: QuartzComponentProps) => {
         
     }
 })satisfies QuartzComponentConstructor
