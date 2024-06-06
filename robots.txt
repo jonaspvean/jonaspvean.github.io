@@ -1,4 +1,14 @@
+<<<<<<< HEAD
 User-agent: *
 Disallow:
 
 Sitemap: http://0.0.0.0:8080//sitemap.xml
+=======
+---
+permalink: /robots.txt
+---
+User-agent: *
+Disallow:
+
+Sitemap: {{ site.baseurl | prepend: site.url }}/sitemap.xml
+>>>>>>> d8aa4d9e29c66a19a0c6a41b76f11b207488a942
