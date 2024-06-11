@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html><body>
+<table>
+  <tbody>
+    <tr>
+      <td>Once you’ve [[index#🪴 Get Started</td>
+      <td>initialized]] Quartz, let’s see what it looks like locally:</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>npx quartz build <span class="nt">--serve</span>
+</code></pre></div></div>
+
+<p>This will start a local web server to run your Quartz on your computer. Open a web browser and visit <code class="language-plaintext highlighter-rouge">http://localhost:8080/</code> to view it.</p>
+
+<blockquote>
+  <p>[!hint] Flags and options
+For full help options, you can run <code class="language-plaintext highlighter-rouge">npx quartz build --help</code>.</p>
+
+  <p>Most of these have sensible defaults but you can override them if you have a custom setup:</p>
+
+  <ul>
+    <li>
+<code class="language-plaintext highlighter-rouge">-d</code> or <code class="language-plaintext highlighter-rouge">--directory</code>: the content folder. This is normally just <code class="language-plaintext highlighter-rouge">content</code>
+</li>
+    <li>
+<code class="language-plaintext highlighter-rouge">-v</code> or <code class="language-plaintext highlighter-rouge">--verbose</code>: print out extra logging information</li>
+    <li>
+<code class="language-plaintext highlighter-rouge">-o</code> or <code class="language-plaintext highlighter-rouge">--output</code>: the output folder. This is normally just <code class="language-plaintext highlighter-rouge">public</code>
+</li>
+    <li>
+<code class="language-plaintext highlighter-rouge">--serve</code>: run a local hot-reloading server to preview your Quartz</li>
+    <li>
+<code class="language-plaintext highlighter-rouge">--port</code>: what port to run the local preview server on</li>
+    <li>
+<code class="language-plaintext highlighter-rouge">--concurrency</code>: how many threads to use to parse notes</li>
+  </ul>
+</blockquote>
+</body></html>

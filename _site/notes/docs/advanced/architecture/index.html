@@ -1,0 +1,96 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html><body>
+<p>Quartz is a static site generator. How does it work?</p>
+
+<p>This question is best answered by tracing what happens when a user (you!) runs <code class="language-plaintext highlighter-rouge">npx quartz build</code> in the command line:</p>
+
+<h2 id="on-the-server">On the server</h2>
+
+<ol>
+  <li>After running <code class="language-plaintext highlighter-rouge">npx quartz build</code>, npm will look at <code class="language-plaintext highlighter-rouge">package.json</code> to find the <code class="language-plaintext highlighter-rouge">bin</code> entry for <code class="language-plaintext highlighter-rouge">quartz</code> which points at <code class="language-plaintext highlighter-rouge">./quartz/bootstrap-cli.mjs</code>.</li>
+  <li>This file has a <a href="https://en.wikipedia.org/wiki/Shebang_(Unix)" rel="external nofollow noopener" target="_blank">shebang</a> line at the top which tells npm to execute it using Node.</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">bootstrap-cli.mjs</code> is responsible for a few things:
+    <ol>
+      <li>Parsing the command-line arguments using <a href="http://yargs.js.org/" rel="external nofollow noopener" target="_blank">yargs</a>.</li>
+      <li>Transpiling and bundling the rest of Quartz (which is in Typescript) to regular JavaScript using <a href="https://esbuild.github.io/" rel="external nofollow noopener" target="_blank">esbuild</a>. The <code class="language-plaintext highlighter-rouge">esbuild</code> configuration here is slightly special as it also handles <code class="language-plaintext highlighter-rouge">.scss</code> file imports using <a href="https://www.npmjs.com/package/esbuild-sass-plugin" rel="external nofollow noopener" target="_blank">esbuild-sass-plugin v2</a>. Additionally, we bundle ‘inline’ client-side scripts (any <code class="language-plaintext highlighter-rouge">.inline.ts</code> file) that components declare using a custom <code class="language-plaintext highlighter-rouge">esbuild</code> plugin that runs another instance of <code class="language-plaintext highlighter-rouge">esbuild</code> which bundles for the browser instead of <code class="language-plaintext highlighter-rouge">node</code>. Modules of both types are imported as plain text.</li>
+      <li>Running the local preview server if <code class="language-plaintext highlighter-rouge">--serve</code> is set. This starts two servers:
+        <ol>
+          <li>A WebSocket server on port 3001 to handle hot-reload signals. This tracks all inbound connections and sends a ‘rebuild’ message a server-side change is detected (either content or configuration).</li>
+          <li>An HTTP file-server on a user defined port (normally 8080) to serve the actual website files.</li>
+        </ol>
+      </li>
+      <li>If the <code class="language-plaintext highlighter-rouge">--serve</code> flag is set, it also starts a file watcher to detect source-code changes (e.g. anything that is <code class="language-plaintext highlighter-rouge">.ts</code>, <code class="language-plaintext highlighter-rouge">.tsx</code>, <code class="language-plaintext highlighter-rouge">.scss</code>, or packager files). On a change, we rebuild the module (step 2 above) using esbuild’s <a href="https://esbuild.github.io/api/#rebuild" rel="external nofollow noopener" target="_blank">rebuild API</a> which drastically reduces the build times.</li>
+      <li>After transpiling the main Quartz build module (<code class="language-plaintext highlighter-rouge">quartz/build.ts</code>), we write it to a cache file <code class="language-plaintext highlighter-rouge">.quartz-cache/transpiled-build.mjs</code> and then dynamically import this using <code class="language-plaintext highlighter-rouge">await import(cacheFile)</code>. However, we need to be pretty smart about how to bust Node’s <a href="https://github.com/nodejs/modules/issues/307" rel="external nofollow noopener" target="_blank">import cache</a> so we add a random query string to fake Node into thinking it’s a new module. This does, however, cause memory leaks so we just hope that the user doesn’t hot-reload their configuration too many times in a single session :)) (it leaks about ~350kB memory on each reload). After importing the module, we then invoke it, passing in the command line arguments we parsed earlier along with a callback function to signal the client to refresh.</li>
+    </ol>
+  </li>
+  <li>In <code class="language-plaintext highlighter-rouge">build.ts</code>, we start by installing source map support manually to account for the query string cache busting hack we introduced earlier. Then, we start processing content:
+    <ol>
+      <li>Clean the output directory.</li>
+      <li>Recursively glob all files in the <code class="language-plaintext highlighter-rouge">content</code> folder, respecting the <code class="language-plaintext highlighter-rouge">.gitignore</code>.</li>
+      <li>Parse the Markdown files.
+        <ol>
+          <li>Quartz detects the number of threads available and chooses to spawn worker threads if there are &gt;128 pieces of content to parse (rough heuristic). If it needs to spawn workers, it will invoke esbuild again to transpile the worker script <code class="language-plaintext highlighter-rouge">quartz/worker.ts</code>. Then, a work-stealing <a href="https://www.npmjs.com/package/workerpool" rel="external nofollow noopener" target="_blank">workerpool</a> is then created and batches of 128 files are assigned to workers.</li>
+          <li>Each worker (or just the main thread if there is no concurrency) creates a <a href="https://github.com/unifiedjs/unified" rel="external nofollow noopener" target="_blank">unified</a> parser based off of the plugins defined in the [[configuration]].</li>
+          <li>Parsing has three steps:
+            <ol>
+              <li>Read the file into a <a href="https://github.com/vfile/vfile" rel="external nofollow noopener" target="_blank">vfile</a>.</li>
+              <li>Applied plugin-defined text transformations over the content.</li>
+              <li>Slugify the file path and store it in the data for the file. See the page on [[paths]] for more details about how path logic works in Quartz (spoiler: its complicated).</li>
+              <li>Markdown parsing using <a href="https://www.npmjs.com/package/remark-parse" rel="external nofollow noopener" target="_blank">remark-parse</a> (text to <a href="https://github.com/syntax-tree/mdast" rel="external nofollow noopener" target="_blank">mdast</a>).</li>
+              <li>Apply plugin-defined Markdown-to-Markdown transformations.</li>
+              <li>Convert Markdown into HTML using <a href="https://github.com/remarkjs/remark-rehype" rel="external nofollow noopener" target="_blank">remark-rehype</a> (<a href="https://github.com/syntax-tree/mdast" rel="external nofollow noopener" target="_blank">mdast</a> to <a href="https://github.com/syntax-tree/hast" rel="external nofollow noopener" target="_blank">hast</a>).</li>
+              <li>Apply plugin-defined HTML-to-HTML transformations.</li>
+            </ol>
+          </li>
+        </ol>
+      </li>
+      <li>Filter out unwanted content using plugins.</li>
+      <li>Emit files using plugins.
+        <ol>
+          <li>Gather all the static resources (e.g. external CSS, JS modules, etc.) each emitter plugin declares.</li>
+          <li>Emitters that emit HTML files do a bit of extra work here as they need to transform the <a href="https://github.com/syntax-tree/hast" rel="external nofollow noopener" target="_blank">hast</a> produced in the parse step to JSX. This is done using <a href="https://github.com/syntax-tree/hast-util-to-jsx-runtime" rel="external nofollow noopener" target="_blank">hast-util-to-jsx-runtime</a> with the <a href="https://preactjs.com/" rel="external nofollow noopener" target="_blank">Preact</a> runtime. Finally, the JSX is rendered to HTML using <a href="https://github.com/preactjs/preact-render-to-string" rel="external nofollow noopener" target="_blank">preact-render-to-string</a> which statically renders the JSX to HTML (i.e. doesn’t care about <code class="language-plaintext highlighter-rouge">useState</code>, <code class="language-plaintext highlighter-rouge">useEffect</code>, or any other React/Preact interactive bits). Here, we also do a bunch of fun stuff like assemble the page [[layout]] from <code class="language-plaintext highlighter-rouge">quartz.layout.ts</code>, assemble all the inline scripts that actually get shipped to the client, and all the transpiled styles. The bulk of this logic can be found in <code class="language-plaintext highlighter-rouge">quartz/components/renderPage.tsx</code>. Other fun things of note:
+            <ol>
+              <li>CSS is minified and transformed using <a href="https://github.com/parcel-bundler/lightningcss" rel="external nofollow noopener" target="_blank">Lightning CSS</a> to add vendor prefixes and do syntax lowering.</li>
+              <li>Scripts are split into <code class="language-plaintext highlighter-rouge">beforeDOMLoaded</code> and <code class="language-plaintext highlighter-rouge">afterDOMLoaded</code> and are inserted in the <code class="language-plaintext highlighter-rouge">&lt;head&gt;</code> and <code class="language-plaintext highlighter-rouge">&lt;body&gt;</code> respectively.</li>
+            </ol>
+          </li>
+          <li>Finally, each emitter plugin is responsible for emitting and writing it’s own emitted files to disk.</li>
+        </ol>
+      </li>
+      <li>If the <code class="language-plaintext highlighter-rouge">--serve</code> flag was detected, we also set up another file watcher to detect content changes (only <code class="language-plaintext highlighter-rouge">.md</code> files). We keep a content map that tracks the parsed AST and plugin data for each slug and update this on file changes. Newly added or modified paths are rebuilt and added to the content map. Then, all the filters and emitters are run over the resulting content map. This file watcher is debounced with a threshold of 250ms. On success, we send a client refresh signal using the passed in callback function.</li>
+    </ol>
+  </li>
+</ol>
+
+<h2 id="on-the-client">On the client</h2>
+
+<ol>
+  <li>The browser opens a Quartz page and loads the HTML. The <code class="language-plaintext highlighter-rouge">&lt;head&gt;</code> also links to page styles (emitted to <code class="language-plaintext highlighter-rouge">public/index.css</code>) and page-critical JS (emitted to <code class="language-plaintext highlighter-rouge">public/prescript.js</code>)</li>
+  <li>Then, once the body is loaded, the browser loads the non-critical JS (emitted to <code class="language-plaintext highlighter-rouge">public/postscript.js</code>)</li>
+  <li>Once the page is done loading, the page will then dispatch a custom synthetic browser event <code class="language-plaintext highlighter-rouge">"nav"</code>. This is used so client-side scripts declared by components can ‘setup’ anything that requires access to the page DOM.
+    <ol>
+      <li>
+        <table>
+          <tbody>
+            <tr>
+              <td>If the [[SPA Routing</td>
+              <td>enableSPA option]] is enabled in the [[configuration]], this <code class="language-plaintext highlighter-rouge">"nav"</code> event is also fired on any client-navigation to allow for components to unregister and reregister any event handlers and state.</td>
+            </tr>
+          </tbody>
+        </table>
+      </li>
+      <li>If it’s not, we wire up the <code class="language-plaintext highlighter-rouge">"nav"</code> event to just be fired a single time after page load to allow for consistency across how state is setup across both SPA and non-SPA contexts.</li>
+    </ol>
+  </li>
+</ol>
+
+<table>
+  <tbody>
+    <tr>
+      <td>The architecture and design of the plugin system was intentionally left pretty vague here as this is described in much more depth in the guide on [[making plugins</td>
+      <td>making your own plugin]].</td>
+    </tr>
+  </tbody>
+</table>
+</body></html>

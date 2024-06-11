@@ -1,0 +1,35 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html><body>
+<p>This plugin generates a table of contents (TOC) for Markdown documents. See [[table of contents]] for more information.</p>
+
+<blockquote>
+  <p>[!note]
+For information on how to add, remove or configure plugins, see the [[configuration#Plugins|Configuration]] page.</p>
+</blockquote>
+
+<p>This plugin accepts the following configuration options:</p>
+
+<ul>
+  <li>
+<code class="language-plaintext highlighter-rouge">maxDepth</code>: Limits the depth of headings included in the TOC, ranging from <code class="language-plaintext highlighter-rouge">1</code> (top level headings only) to <code class="language-plaintext highlighter-rouge">6</code> (all heading levels). Default is <code class="language-plaintext highlighter-rouge">3</code>.</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">minEntries</code>: The minimum number of heading entries required for the TOC to be displayed. Default is <code class="language-plaintext highlighter-rouge">1</code>.</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">showByDefault</code>: If <code class="language-plaintext highlighter-rouge">true</code> (default), the TOC should be displayed by default. Can be overridden by frontmatter settings.</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">collapseByDefault</code>: If <code class="language-plaintext highlighter-rouge">true</code>, the TOC will start in a collapsed state. Default is <code class="language-plaintext highlighter-rouge">false</code>.</li>
+</ul>
+
+<blockquote>
+  <p>[!warning]
+This plugin needs the <code class="language-plaintext highlighter-rouge">Component.TableOfContents</code> component in <code class="language-plaintext highlighter-rouge">quartz.layout.ts</code> to determine where to display the TOC. Without it, nothing will be displayed. They should always be added or removed together.</p>
+</blockquote>
+
+<h2 id="api">API</h2>
+
+<ul>
+  <li>Category: Transformer</li>
+  <li>Function name: <code class="language-plaintext highlighter-rouge">Plugin.TableOfContents()</code>.</li>
+  <li>Source: <a href="https://github.com/jackyzha0/quartz/blob/v4/quartz/plugins/transformers/toc.ts" rel="external nofollow noopener" target="_blank"><code class="language-plaintext highlighter-rouge">quartz/plugins/transformers/toc.ts</code></a>.</li>
+</ul>
+</body></html>

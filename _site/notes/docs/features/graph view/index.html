@@ -1,0 +1,69 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html><body>
+<p>Quartz features a graph-view that can show both a local graph view and a global graph view.</p>
+
+<ul>
+  <li>The local graph view shows files that either link to the current file or are linked from the current file. In other words, it shows all notes that are <em>at most</em> one hop away.</li>
+  <li>The global graph view can be toggled by clicking the graph icon on the top-right of the local graph view. It shows <em>all</em> the notes in your graph and how they connect to each other.</li>
+</ul>
+
+<p>By default, the node radius is proportional to the total number of incoming and outgoing internal links from that file.</p>
+
+<p>Additionally, similar to how browsers highlight visited links a different colour, the graph view will also show nodes that you have visited in a different colour.</p>
+
+<blockquote>
+  <p>[!info]
+Graph View requires the <code class="language-plaintext highlighter-rouge">ContentIndex</code> emitter plugin to be present in the [[configuration]].</p>
+</blockquote>
+
+<h2 id="customization">Customization</h2>
+
+<p>Most configuration can be done by passing in options to <code class="language-plaintext highlighter-rouge">Component.Graph()</code>.</p>
+
+<p>For example, here’s what the default configuration looks like:</p>
+
+<p><code class="language-plaintext highlighter-rouge">typescript title="quartz.layout.ts"
+Component.Graph({
+  localGraph: {
+    drag: true, // whether to allow panning the view around
+    zoom: true, // whether to allow zooming in and out
+    depth: 1, // how many hops of notes to display
+    scale: 1.1, // default view scale
+    repelForce: 0.5, // how much nodes should repel each other
+    centerForce: 0.3, // how much force to use when trying to center the nodes
+    linkDistance: 30, // how long should the links be by default?
+    fontSize: 0.6, // what size should the node labels be?
+    opacityScale: 1, // how quickly do we fade out the labels when zooming out?
+    removeTags: [], // what tags to remove from the graph
+    showTags: true, // whether to show tags in the graph
+  },
+  globalGraph: {
+    drag: true,
+    zoom: true,
+    depth: -1,
+    scale: 0.9,
+    repelForce: 0.5,
+    centerForce: 0.3,
+    linkDistance: 30,
+    fontSize: 0.6,
+    opacityScale: 1,
+    removeTags: [], // what tags to remove from the graph
+    showTags: true, // whether to show tags in the graph
+  },
+})
+</code></p>
+
+<p>When passing in your own options, you can omit any or all of these fields if you’d like to keep the default value for that field.</p>
+
+<p>Want to customize it even more?</p>
+
+<ul>
+  <li>Removing graph view: delete all usages of <code class="language-plaintext highlighter-rouge">Component.Graph()</code> from <code class="language-plaintext highlighter-rouge">quartz.layout.ts</code>.</li>
+  <li>Component: <code class="language-plaintext highlighter-rouge">quartz/components/Graph.tsx</code>
+</li>
+  <li>Style: <code class="language-plaintext highlighter-rouge">quartz/components/styles/graph.scss</code>
+</li>
+  <li>Script: <code class="language-plaintext highlighter-rouge">quartz/components/scripts/graph.inline.ts</code>
+</li>
+</ul>
+</body></html>

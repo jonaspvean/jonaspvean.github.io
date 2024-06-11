@@ -1,0 +1,34 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html><body>
+<p>Like Wikipedia, when you hover over a link in Quartz, there is a popup of a page preview that you can scroll to see the entire content. Links to headers will also scroll the popup to show that specific header in view.</p>
+
+<p>By default, Quartz only fetches previews for pages inside your vault due to <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS" rel="external nofollow noopener" target="_blank">CORS</a>. It does this by selecting all HTML elements with the <code class="language-plaintext highlighter-rouge">popover-hint</code> class. For most pages, this includes the page title, page metadata like words and time to read, tags, and the actual page content.</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>When [[creating components</td>
+      <td>creating your own components]], you can include this <code class="language-plaintext highlighter-rouge">popover-hint</code> class to also include it in the popover.</td>
+    </tr>
+  </tbody>
+</table>
+
+<table>
+  <tbody>
+    <tr>
+      <td>Similar to Obsidian, [[quartz layout.png</td>
+      <td>images referenced using wikilinks]] can also be viewed as popups.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="configuration">Configuration</h2>
+
+<ul>
+  <li>Remove popovers: set the <code class="language-plaintext highlighter-rouge">enablePopovers</code> field in <code class="language-plaintext highlighter-rouge">quartz.config.ts</code> to be <code class="language-plaintext highlighter-rouge">false</code>.</li>
+  <li>Style: <code class="language-plaintext highlighter-rouge">quartz/components/styles/popover.scss</code>
+</li>
+  <li>Script: <code class="language-plaintext highlighter-rouge">quartz/components/scripts/popover.inline.ts</code>
+</li>
+</ul>
+</body></html>

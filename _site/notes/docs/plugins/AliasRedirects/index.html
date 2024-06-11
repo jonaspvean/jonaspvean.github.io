@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html><body>
+<p>This plugin emits HTML redirect pages for aliases and permalinks defined in the frontmatter of content files.</p>
+
+<p>For example, A <code class="language-plaintext highlighter-rouge">foo.md</code> has the following frontmatter</p>
+
+<h2 id="md-titlefoomd">```md title=”foo.md”</h2>
+<p>title: “Foo”
+alias:</p>
+<ul>
+  <li>
+    <h2 id="bar">“bar”</h2>
+    <p>```</p>
+  </li>
+</ul>
+
+<p>The target <code class="language-plaintext highlighter-rouge">host.me/bar</code> will be redirected to <code class="language-plaintext highlighter-rouge">host.me/foo</code></p>
+
+<p>Note that these are permanent redirect.</p>
+
+<p>The emitter supports the following aliases:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">aliases</code></li>
+  <li><code class="language-plaintext highlighter-rouge">alias</code></li>
+</ul>
+
+<blockquote>
+  <p>[!note]
+For information on how to add, remove or configure plugins, see the [[configuration#Plugins|Configuration]] page.</p>
+</blockquote>
+
+<p>This plugin has no configuration options.</p>
+
+<h2 id="api">API</h2>
+
+<ul>
+  <li>Category: Emitter</li>
+  <li>Function name: <code class="language-plaintext highlighter-rouge">Plugin.AliasRedirects()</code>.</li>
+  <li>Source: <a href="https://github.com/jackyzha0/quartz/blob/v4/quartz/plugins/emitters/aliases.ts" rel="external nofollow noopener" target="_blank"><code class="language-plaintext highlighter-rouge">quartz/plugins/emitters/aliases.ts</code></a>.</li>
+</ul>
+</body></html>
