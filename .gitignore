@@ -1,6 +1,6 @@
-.bundle
+.bundle/
 .sass-cache
-.jekyll-cache
+.jekyll-cache/
 .jekyll-metadata
 .DS_store
 .ruby-version
@@ -8,4 +8,4 @@
 Gemfile.lock
 assets/libs/
 node_modules/
-vendor
+vendor/
