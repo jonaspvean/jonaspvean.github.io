@@ -1,0 +1,327 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html><body>
+<blockquote>
+  <p>[!warning]
+This part of the documentation will assume you have working knowledge in TypeScript and will include code snippets that describe the interface of what Quartz plugins should look like.</p>
+</blockquote>
+
+<p>Quartz’s plugins are a series of transformations over content. This is illustrated in the diagram of the processing pipeline below:</p>
+
+<p>![[quartz transform pipeline.png]]</p>
+
+<p>All plugins are defined as a function that takes in a single parameter for options <code class="language-plaintext highlighter-rouge">type OptionType = object | undefined</code> and return an object that corresponds to the type of plugin it is.</p>
+
+<div class="language-ts highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">type</span> <span class="nx">OptionType</span> <span class="o">=</span> <span class="nx">object</span> <span class="o">|</span> <span class="kc">undefined</span>
+<span class="kd">type</span> <span class="nx">QuartzPlugin</span><span class="o">&lt;</span><span class="nx">Options</span> <span class="kd">extends</span> <span class="nx">OptionType</span> <span class="o">=</span> <span class="kc">undefined</span><span class="o">&gt;</span> <span class="o">=</span> <span class="p">(</span><span class="nx">opts</span><span class="p">?:</span> <span class="nx">Options</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">QuartzPluginInstance</span>
+<span class="kd">type</span> <span class="nx">QuartzPluginInstance</span> <span class="o">=</span>
+  <span class="o">|</span> <span class="nx">QuartzTransformerPluginInstance</span>
+  <span class="o">|</span> <span class="nx">QuartzFilterPluginInstance</span>
+  <span class="o">|</span> <span class="nx">QuartzEmitterPluginInstance</span>
+</code></pre></div></div>
+
+<p>The following sections will go into detail for what methods can be implemented for each plugin type. Before we do that, let’s clarify a few more ambiguous types:</p>
+
+<ul>
+  <li>
+<code class="language-plaintext highlighter-rouge">BuildCtx</code> is defined in <code class="language-plaintext highlighter-rouge">quartz/ctx.ts</code>. It consists of
+    <ul>
+      <li>
+<code class="language-plaintext highlighter-rouge">argv</code>: The command line arguments passed to the Quartz [[build]] command</li>
+      <li>
+<code class="language-plaintext highlighter-rouge">cfg</code>: The full Quartz [[configuration]]</li>
+      <li>
+<code class="language-plaintext highlighter-rouge">allSlugs</code>: a list of all the valid content slugs (see [[paths]] for more information on what a <code class="language-plaintext highlighter-rouge">ServerSlug</code> is)</li>
+    </ul>
+  </li>
+  <li>
+<code class="language-plaintext highlighter-rouge">StaticResources</code> is defined in <code class="language-plaintext highlighter-rouge">quartz/resources.tsx</code>. It consists of
+    <ul>
+      <li>
+<code class="language-plaintext highlighter-rouge">css</code>: a list of URLs for stylesheets that should be loaded</li>
+      <li>
+<code class="language-plaintext highlighter-rouge">js</code>: a list of scripts that should be loaded. A script is described with the <code class="language-plaintext highlighter-rouge">JSResource</code> type which is also defined in <code class="language-plaintext highlighter-rouge">quartz/resources.tsx</code>. It allows you to define a load time (either before or after the DOM has been loaded), whether it should be a module, and either the source URL or the inline content of the script.</li>
+    </ul>
+  </li>
+</ul>
+
+<h2 id="transformers">Transformers</h2>
+
+<p>Transformers <strong>map</strong> over content, taking a Markdown file and outputting modified content or adding metadata to the file itself.</p>
+
+<div class="language-ts highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">export</span> <span class="kd">type</span> <span class="nx">QuartzTransformerPluginInstance</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="na">name</span><span class="p">:</span> <span class="kr">string</span>
+  <span class="nx">textTransform</span><span class="p">?:</span> <span class="p">(</span><span class="na">ctx</span><span class="p">:</span> <span class="nx">BuildCtx</span><span class="p">,</span> <span class="na">src</span><span class="p">:</span> <span class="kr">string</span> <span class="o">|</span> <span class="nx">Buffer</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="kr">string</span> <span class="o">|</span> <span class="nx">Buffer</span>
+  <span class="nx">markdownPlugins</span><span class="p">?:</span> <span class="p">(</span><span class="na">ctx</span><span class="p">:</span> <span class="nx">BuildCtx</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">PluggableList</span>
+  <span class="nx">htmlPlugins</span><span class="p">?:</span> <span class="p">(</span><span class="na">ctx</span><span class="p">:</span> <span class="nx">BuildCtx</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">PluggableList</span>
+  <span class="nx">externalResources</span><span class="p">?:</span> <span class="p">(</span><span class="na">ctx</span><span class="p">:</span> <span class="nx">BuildCtx</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nb">Partial</span><span class="o">&lt;</span><span class="nx">StaticResources</span><span class="o">&gt;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>All transformer plugins must define at least a <code class="language-plaintext highlighter-rouge">name</code> field to register the plugin and a few optional functions that allow you to hook into various parts of transforming a single Markdown file.</p>
+
+<ul>
+  <li>
+<code class="language-plaintext highlighter-rouge">textTransform</code> performs a text-to-text transformation <em>before</em> a file is parsed into the <a href="https://github.com/syntax-tree/mdast" rel="external nofollow noopener" target="_blank">Markdown AST</a>.</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">markdownPlugins</code> defines a list of <a href="https://github.com/remarkjs/remark/blob/main/doc/plugins.md" rel="external nofollow noopener" target="_blank">remark plugins</a>. <code class="language-plaintext highlighter-rouge">remark</code> is a tool that transforms Markdown to Markdown in a structured way.</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">htmlPlugins</code> defines a list of <a href="https://github.com/rehypejs/rehype/blob/main/doc/plugins.md" rel="external nofollow noopener" target="_blank">rehype plugins</a>. Similar to how <code class="language-plaintext highlighter-rouge">remark</code> works, <code class="language-plaintext highlighter-rouge">rehype</code> is a tool that transforms HTML to HTML in a structured way.</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">externalResources</code> defines any external resources the plugin may need to load on the client-side for it to work properly.</li>
+</ul>
+
+<p>Normally for both <code class="language-plaintext highlighter-rouge">remark</code> and <code class="language-plaintext highlighter-rouge">rehype</code>, you can find existing plugins that you can use to . If you’d like to create your own <code class="language-plaintext highlighter-rouge">remark</code> or <code class="language-plaintext highlighter-rouge">rehype</code> plugin, checkout the <a href="https://unifiedjs.com/learn/guide/create-a-plugin/" rel="external nofollow noopener" target="_blank">guide to creating a plugin</a> using <code class="language-plaintext highlighter-rouge">unified</code> (the underlying AST parser and transformer library).</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>A good example of a transformer plugin that borrows from the <code class="language-plaintext highlighter-rouge">remark</code> and <code class="language-plaintext highlighter-rouge">rehype</code> ecosystems is the [[plugins/Latex</td>
+      <td>Latex]] plugin:</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>```ts title=”quartz/plugins/transformers/latex.ts”
+import remarkMath from “remark-math”
+import rehypeKatex from “rehype-katex”
+import rehypeMathjax from “rehype-mathjax/svg”
+import { QuartzTransformerPlugin } from “../types”</p>
+
+<p>interface Options {
+  renderEngine: “katex” | “mathjax”
+}</p>
+
+<p>export const Latex: QuartzTransformerPlugin<options> = (opts?: Options) =&gt; {
+  const engine = opts?.renderEngine ?? "katex"
+  return {
+    name: "Latex",
+    markdownPlugins() {
+      return [remarkMath]
+    },
+    htmlPlugins() {
+      if (engine === "katex") {
+        // if you need to pass options into a plugin, you
+        // can use a tuple of [plugin, options]
+        return [[rehypeKatex, { output: "html" }]]
+      } else {
+        return [rehypeMathjax]
+      }
+    },
+    externalResources() {
+      if (engine === "katex") {
+        return {
+          css: [
+            // base css
+            "https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css",
+          ],
+          js: [
+            {
+              // fix copy behaviour: https://github.com/KaTeX/KaTeX/blob/main/contrib/copy-tex/README.md
+              src: "https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js",
+              loadTime: "afterDOMReady",
+              contentType: "external",
+            },
+          ],
+        }
+      } else {
+        return {}
+      }
+    },
+  }
+}</options></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+Another common thing that transformer plugins will do is parse a file and add extra data for that file:
+
+```ts
+export const AddWordCount: QuartzTransformerPlugin = () =&gt; {
+  return {
+    name: "AddWordCount",
+    markdownPlugins() {
+      return [
+        () =&gt; {
+          return (tree, file) =&gt; {
+            // tree is an `mdast` root element
+            // file is a `vfile`
+            const text = file.value
+            const words = text.split(" ").length
+            file.data.wordcount = words
+          }
+        },
+      ]
+    },
+  }
+}
+
+// tell typescript about our custom data fields we are adding
+// other plugins will then also be aware of this data field
+declare module "vfile" {
+  interface DataMap {
+    wordcount: number
+  }
+}
+</code></pre></div></div>
+
+<p>Finally, you can also perform transformations over Markdown or HTML ASTs using the <code class="language-plaintext highlighter-rouge">visit</code> function from the <code class="language-plaintext highlighter-rouge">unist-util-visit</code> package or the <code class="language-plaintext highlighter-rouge">findAndReplace</code> function from the <code class="language-plaintext highlighter-rouge">mdast-util-find-and-replace</code> package.</p>
+
+<div class="language-ts highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">export</span> <span class="kd">const</span> <span class="nx">TextTransforms</span><span class="p">:</span> <span class="nx">QuartzTransformerPlugin</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="p">{</span>
+    <span class="na">name</span><span class="p">:</span> <span class="dl">"</span><span class="s2">TextTransforms</span><span class="dl">"</span><span class="p">,</span>
+    <span class="nf">markdownPlugins</span><span class="p">()</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="p">[()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="k">return </span><span class="p">(</span><span class="nx">tree</span><span class="p">,</span> <span class="nx">file</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+          <span class="c1">// replace _text_ with the italics version</span>
+          <span class="nf">findAndReplace</span><span class="p">(</span><span class="nx">tree</span><span class="p">,</span> <span class="sr">/_</span><span class="se">(</span><span class="sr">.+</span><span class="se">)</span><span class="sr">_/</span><span class="p">,</span> <span class="p">(</span><span class="na">_value</span><span class="p">:</span> <span class="kr">string</span><span class="p">,</span> <span class="p">...</span><span class="na">capture</span><span class="p">:</span> <span class="kr">string</span><span class="p">[])</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="c1">// inner is the text inside of the () of the regex</span>
+            <span class="kd">const</span> <span class="p">[</span><span class="nx">inner</span><span class="p">]</span> <span class="o">=</span> <span class="nx">capture</span>
+            <span class="c1">// return an mdast node</span>
+            <span class="c1">// https://github.com/syntax-tree/mdast</span>
+            <span class="k">return</span> <span class="p">{</span>
+              <span class="na">type</span><span class="p">:</span> <span class="dl">"</span><span class="s2">emphasis</span><span class="dl">"</span><span class="p">,</span>
+              <span class="na">children</span><span class="p">:</span> <span class="p">[{</span> <span class="na">type</span><span class="p">:</span> <span class="dl">'</span><span class="s1">text</span><span class="dl">'</span><span class="p">,</span> <span class="na">value</span><span class="p">:</span> <span class="nx">inner</span> <span class="p">}]</span>
+            <span class="p">}</span>
+          <span class="p">})</span>
+
+         <span class="c1">// remove all links (replace with just the link content)</span>
+         <span class="c1">// match by 'type' field on an mdast node</span>
+         <span class="c1">// https://github.com/syntax-tree/mdast#link in this example</span>
+          <span class="nf">visit</span><span class="p">(</span><span class="nx">tree</span><span class="p">,</span> <span class="dl">"</span><span class="s2">link</span><span class="dl">"</span><span class="p">,</span> <span class="p">(</span><span class="na">link</span><span class="p">:</span> <span class="nx">Link</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="p">{</span>
+              <span class="na">type</span><span class="p">:</span> <span class="dl">"</span><span class="s2">paragraph</span><span class="dl">"</span>
+              <span class="na">children</span><span class="p">:</span> <span class="p">[{</span> <span class="na">type</span><span class="p">:</span> <span class="dl">'</span><span class="s1">text</span><span class="dl">'</span><span class="p">,</span> <span class="na">value</span><span class="p">:</span> <span class="nx">link</span><span class="p">.</span><span class="nx">title</span> <span class="p">}]</span>
+            <span class="p">}</span>
+          <span class="p">})</span>
+        <span class="p">}</span>
+      <span class="p">}]</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>All transformer plugins can be found under <code class="language-plaintext highlighter-rouge">quartz/plugins/transformers</code>. If you decide to write your own transformer plugin, don’t forget to re-export it under <code class="language-plaintext highlighter-rouge">quartz/plugins/transformers/index.ts</code></p>
+
+<p>A parting word: transformer plugins are quite complex so don’t worry if you don’t get them right away. Take a look at the built in transformers and see how they operate over content to get a better sense for how to accomplish what you are trying to do.</p>
+
+<h2 id="filters">Filters</h2>
+
+<p>Filters <strong>filter</strong> content, taking the output of all the transformers and determining what files to actually keep and what to discard.</p>
+
+<div class="language-ts highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">export</span> <span class="kd">type</span> <span class="nx">QuartzFilterPlugin</span><span class="o">&lt;</span><span class="nx">Options</span> <span class="kd">extends</span> <span class="nx">OptionType</span> <span class="o">=</span> <span class="kc">undefined</span><span class="o">&gt;</span> <span class="o">=</span> <span class="p">(</span>
+  <span class="nx">opts</span><span class="p">?:</span> <span class="nx">Options</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">QuartzFilterPluginInstance</span>
+
+<span class="k">export</span> <span class="kd">type</span> <span class="nx">QuartzFilterPluginInstance</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="na">name</span><span class="p">:</span> <span class="kr">string</span>
+  <span class="nf">shouldPublish</span><span class="p">(</span><span class="na">ctx</span><span class="p">:</span> <span class="nx">BuildCtx</span><span class="p">,</span> <span class="na">content</span><span class="p">:</span> <span class="nx">ProcessedContent</span><span class="p">):</span> <span class="nx">boolean</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>A filter plugin must define a <code class="language-plaintext highlighter-rouge">name</code> field and a <code class="language-plaintext highlighter-rouge">shouldPublish</code> function that takes in a piece of content that has been processed by all the transformers and returns a <code class="language-plaintext highlighter-rouge">true</code> or <code class="language-plaintext highlighter-rouge">false</code> depending on whether it should be passed to the emitter plugins or not.</p>
+
+<p>For example, here is the built-in plugin for removing drafts:</p>
+
+<p>```ts title=”quartz/plugins/filters/draft.ts”
+import { QuartzFilterPlugin } from “../types”</p>
+
+<p>export const RemoveDrafts: QuartzFilterPlugin&lt;{}&gt; = () =&gt; ({
+  name: “RemoveDrafts”,
+  shouldPublish(_ctx, [_tree, vfile]) {
+    // uses frontmatter parsed from transformers
+    const draftFlag: boolean = vfile.data?.frontmatter?.draft ?? false
+    return !draftFlag
+  },
+})</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+## Emitters
+
+Emitters **reduce** over content, taking in a list of all the transformed and filtered content and creating output files.
+
+```ts
+export type QuartzEmitterPlugin&lt;Options extends OptionType = undefined&gt; = (
+  opts?: Options,
+) =&gt; QuartzEmitterPluginInstance
+
+export type QuartzEmitterPluginInstance = {
+  name: string
+  emit(ctx: BuildCtx, content: ProcessedContent[], resources: StaticResources): Promise&lt;FilePath[]&gt;
+  getQuartzComponents(ctx: BuildCtx): QuartzComponent[]
+}
+</code></pre></div></div>
+
+<p>An emitter plugin must define a <code class="language-plaintext highlighter-rouge">name</code> field, an <code class="language-plaintext highlighter-rouge">emit</code> function, and a <code class="language-plaintext highlighter-rouge">getQuartzComponents</code> function. <code class="language-plaintext highlighter-rouge">emit</code> is responsible for looking at all the parsed and filtered content and then appropriately creating files and returning a list of paths to files the plugin created.</p>
+
+<p>Creating new files can be done via regular Node <a href="https://nodejs.org/api/fs.html" rel="external nofollow noopener" target="_blank">fs module</a> (i.e. <code class="language-plaintext highlighter-rouge">fs.cp</code> or <code class="language-plaintext highlighter-rouge">fs.writeFile</code>) or via the <code class="language-plaintext highlighter-rouge">write</code> function in <code class="language-plaintext highlighter-rouge">quartz/plugins/emitters/helpers.ts</code> if you are creating files that contain text. <code class="language-plaintext highlighter-rouge">write</code> has the following signature:</p>
+
+<div class="language-ts highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">export</span> <span class="kd">type</span> <span class="nx">WriteOptions</span> <span class="o">=</span> <span class="p">(</span><span class="nx">data</span><span class="p">:</span> <span class="p">{</span>
+  <span class="c1">// the build context</span>
+  <span class="nl">ctx</span><span class="p">:</span> <span class="nx">BuildCtx</span>
+  <span class="c1">// the name of the file to emit (not including the file extension)</span>
+  <span class="nx">slug</span><span class="p">:</span> <span class="nx">ServerSlug</span>
+  <span class="c1">// the file extension</span>
+  <span class="nx">ext</span><span class="p">:</span> <span class="s2">`.</span><span class="p">${</span><span class="kr">string</span><span class="p">}</span><span class="s2">`</span> <span class="o">|</span> <span class="dl">""</span>
+  <span class="c1">// the file content to add</span>
+  <span class="nx">content</span><span class="p">:</span> <span class="kr">string</span>
+<span class="p">})</span> <span class="o">=&gt;</span> <span class="nb">Promise</span><span class="o">&lt;</span><span class="nx">FilePath</span><span class="o">&gt;</span>
+</code></pre></div></div>
+
+<p>This is a thin wrapper around writing to the appropriate output folder and ensuring that intermediate directories exist. If you choose to use the native Node <code class="language-plaintext highlighter-rouge">fs</code> APIs, ensure you emit to the <code class="language-plaintext highlighter-rouge">argv.output</code> folder as well.</p>
+
+<p>If you are creating an emitter plugin that needs to render components, there are three more things to be aware of:</p>
+
+<ul>
+  <li>Your component should use <code class="language-plaintext highlighter-rouge">getQuartzComponents</code> to declare a list of <code class="language-plaintext highlighter-rouge">QuartzComponents</code> that it uses to construct the page. See the page on [[creating components]] for more information.</li>
+  <li>You can use the <code class="language-plaintext highlighter-rouge">renderPage</code> function defined in <code class="language-plaintext highlighter-rouge">quartz/components/renderPage.tsx</code> to render Quartz components into HTML.</li>
+  <li>If you need to render an HTML AST to JSX, you can use the <code class="language-plaintext highlighter-rouge">htmlToJsx</code> function from <code class="language-plaintext highlighter-rouge">quartz/util/jsx.ts</code>. An example of this can be found in <code class="language-plaintext highlighter-rouge">quartz/components/pages/Content.tsx</code>.</li>
+</ul>
+
+<p>For example, the following is a simplified version of the content page plugin that renders every single page.</p>
+
+<p>```tsx title=”quartz/plugins/emitters/contentPage.tsx”
+export const ContentPage: QuartzEmitterPlugin = () =&gt; {
+  // construct the layout
+  const layout: FullPageLayout = {
+    …sharedPageComponents,
+    …defaultContentPageLayout,
+    pageBody: Content(),
+  }
+  const { head, header, beforeBody, pageBody, left, right, footer } = layout
+  return {
+    name: “ContentPage”,
+    getQuartzComponents() {
+      return [head, …header, …beforeBody, pageBody, …left, …right, footer]
+    },
+    async emit(ctx, content, resources, emit): Promise&lt;FilePath[]&gt; {
+      const cfg = ctx.cfg.configuration
+      const fps: FilePath[] = []
+      const allFiles = content.map((c) =&gt; c[1].data)
+      for (const [tree, file] of content) {
+        const slug = canonicalizeServer(file.data.slug!)
+        const externalResources = pageResources(slug, resources)
+        const componentData: QuartzComponentProps = {
+          fileData: file.data,
+          externalResources,
+          cfg,
+          children: [],
+          tree,
+          allFiles,
+        }</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    const content = renderPage(cfg, slug, componentData, opts, externalResources)
+    const fp = await emit({
+      content,
+      slug: file.data.slug!,
+      ext: ".html",
+    })
+
+    fps.push(fp)
+  }
+  return fps
+},   } } ```
+</code></pre></div></div>
+
+<p>Note that it takes in a <code class="language-plaintext highlighter-rouge">FullPageLayout</code> as the options. It’s made by combining a <code class="language-plaintext highlighter-rouge">SharedLayout</code> and a <code class="language-plaintext highlighter-rouge">PageLayout</code> both of which are provided through the <code class="language-plaintext highlighter-rouge">quartz.layout.ts</code> file.</p>
+
+<blockquote>
+  <p>[!hint]
+Look in <code class="language-plaintext highlighter-rouge">quartz/plugins</code> for more examples of plugins in Quartz as reference for your own plugins!</p>
+</blockquote>
+</body></html>

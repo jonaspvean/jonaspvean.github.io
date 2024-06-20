@@ -21,7 +21,7 @@ ENV LANG=en_US.UTF-8 \
     LANGUAGE=en_US:en \
     LC_ALL=en_US.UTF-8 \
     JEKYLL_ENV=production
-
+    
 RUN mkdir /srv/jekyll
 
 ADD Gemfile.lock /srv/jekyll

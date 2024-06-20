@@ -1,0 +1,253 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html><body>
+<blockquote>
+  <p>[!warning]
+This guide assumes you have experience writing JavaScript and are familiar with TypeScript.</p>
+</blockquote>
+
+<p>Normally on the web, we write layout code using HTML which looks something like the following:</p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;article&gt;</span>
+  <span class="nt">&lt;h1&gt;</span>An article header<span class="nt">&lt;/h1&gt;</span>
+  <span class="nt">&lt;p&gt;</span>Some content<span class="nt">&lt;/p&gt;</span>
+<span class="nt">&lt;/article&gt;</span>
+</code></pre></div></div>
+
+<p>This piece of HTML represents an article with a leading header that says “An article header” and a paragraph that contains the text “Some content”. This is combined with CSS to style the page and JavaScript to add interactivity.</p>
+
+<p>However, HTML doesn’t let you create reusable templates. If you wanted to create a new page, you would need to copy and paste the above snippet and edit the header and content yourself. This isn’t great if we have a lot of content on our site that shares a lot of similar layout. The smart people who created React also had similar complaints and invented the concept of Components – JavaScript functions that return JSX – to solve the code duplication problem.</p>
+
+<p>In effect, components allow you to write a JavaScript function that takes some data and produces HTML as an output. <strong>While Quartz doesn’t use React, it uses the same component concept to allow you to easily express layout templates in your Quartz site.</strong></p>
+
+<h2 id="an-example-component">An Example Component</h2>
+
+<h3 id="constructor">Constructor</h3>
+
+<p>Component files are written in <code class="language-plaintext highlighter-rouge">.tsx</code> files that live in the <code class="language-plaintext highlighter-rouge">quartz/components</code> folder. These are re-exported in <code class="language-plaintext highlighter-rouge">quartz/components/index.ts</code> so you can use them in layouts and other components more easily.</p>
+
+<p>Each component file should have a default export that satisfies the <code class="language-plaintext highlighter-rouge">QuartzComponentConstructor</code> function signature. It’s a function that takes in a single optional parameter <code class="language-plaintext highlighter-rouge">opts</code> and returns a Quartz Component. The type of the parameters <code class="language-plaintext highlighter-rouge">opts</code> is defined by the interface <code class="language-plaintext highlighter-rouge">Options</code> which you as the component creator also decide.</p>
+
+<p>In your component, you can use the values from the configuration option to change the rendering behaviour inside of your component. For example, the component in the code snippet below will not render if the <code class="language-plaintext highlighter-rouge">favouriteNumber</code> option is below 0.</p>
+
+<p>```tsx {11-17}
+interface Options {
+  favouriteNumber: number
+}</p>
+
+<p>const defaultOptions: Options = {
+  favouriteNumber: 42,
+}</p>
+
+<p>export default ((userOpts?: Options) =&gt; {
+  const opts = { …userOpts, …defaultOpts }
+  function YourComponent(props: QuartzComponentProps) {
+    if (opts.favouriteNumber &lt; 0) {
+      return null
+    }</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>return &lt;p&gt;My favourite number is {opts.favouriteNumber}&lt;/p&gt;   }
+</code></pre></div></div>
+
+<p>return YourComponent
+}) satisfies QuartzComponentConstructor</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+### Props
+
+The Quartz component itself (lines 11-17 highlighted above) looks like a React component. It takes in properties (sometimes called [props](https://react.dev/learn/passing-props-to-a-component)) and returns JSX.
+
+All Quartz components accept the same set of props:
+
+```tsx title="quartz/components/types.ts"
+// simplified for sake of demonstration
+export type QuartzComponentProps = {
+  fileData: QuartzPluginData
+  cfg: GlobalConfiguration
+  tree: Node&lt;QuartzPluginData&gt;
+  allFiles: QuartzPluginData[]
+  displayClass?: "mobile-only" | "desktop-only"
+}
+</code></pre></div></div>
+
+<ul>
+  <li>
+    <table>
+      <tbody>
+        <tr>
+          <td>
+<code class="language-plaintext highlighter-rouge">fileData</code>: Any metadata [[making plugins</td>
+          <td>plugins]] may have added to the current page.</td>
+        </tr>
+      </tbody>
+    </table>
+    <ul>
+      <li>
+<code class="language-plaintext highlighter-rouge">fileData.slug</code>: slug of the current page.</li>
+      <li>
+<code class="language-plaintext highlighter-rouge">fileData.frontmatter</code>: any frontmatter parsed.</li>
+    </ul>
+  </li>
+  <li>
+<code class="language-plaintext highlighter-rouge">cfg</code>: The <code class="language-plaintext highlighter-rouge">configuration</code> field in <code class="language-plaintext highlighter-rouge">quartz.config.ts</code>.</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">tree</code>: the resulting <a href="https://github.com/syntax-tree/hast" rel="external nofollow noopener" target="_blank">HTML AST</a> after processing and transforming the file. This is useful if you’d like to render the content using <a href="https://github.com/syntax-tree/hast-util-to-jsx-runtime" rel="external nofollow noopener" target="_blank">hast-util-to-jsx-runtime</a> (you can find an example of this in <code class="language-plaintext highlighter-rouge">quartz/components/pages/Content.tsx</code>).</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">allFiles</code>: Metadata for all files that have been parsed. Useful for doing page listings or figuring out the overall site structure.</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">displayClass</code>: a utility class that indicates a preference from the user about how to render it in a mobile or desktop setting. Helpful if you want to conditionally hide a component on mobile or desktop.</li>
+</ul>
+
+<h3 id="styling">Styling</h3>
+
+<p>Quartz components can also define a <code class="language-plaintext highlighter-rouge">.css</code> property on the actual function component which will get picked up by Quartz. This is expected to be a CSS string which can either be inlined or imported from a <code class="language-plaintext highlighter-rouge">.scss</code> file.</p>
+
+<p>Note that inlined styles <strong>must</strong> be plain vanilla CSS:</p>
+
+<p>```tsx {6-10} title=”quartz/components/YourComponent.tsx”
+export default (() =&gt; {
+  function YourComponent() {
+    return &lt;p class="red-text"&gt;Example Component&lt;/p&gt;
+  }</p>
+
+<p>YourComponent.css = `
+  p.red-text {
+    color: red;
+  }
+  `</p>
+
+<p>return YourComponent
+}) satisfies QuartzComponentConstructor</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+Imported styles, however, can be from SCSS files:
+
+```tsx {1-2,9} title="quartz/components/YourComponent.tsx"
+// assuming your stylesheet is in quartz/components/styles/YourComponent.scss
+import styles from "./styles/YourComponent.scss"
+
+export default (() =&gt; {
+  function YourComponent() {
+    return &lt;p&gt;Example Component&lt;/p&gt;
+  }
+
+  YourComponent.css = styles
+  return YourComponent
+}) satisfies QuartzComponentConstructor
+</code></pre></div></div>
+
+<blockquote>
+  <p>[!warning]
+Quartz does not use CSS modules so any styles you declare here apply <em>globally</em>. If you only want it to apply to your component, make sure you use specific class names and selectors.</p>
+</blockquote>
+
+<h3 id="scripts-and-interactivity">Scripts and Interactivity</h3>
+
+<p>What about interactivity? Suppose you want to add an-click handler for example. Like the <code class="language-plaintext highlighter-rouge">.css</code> property on the component, you can also declare <code class="language-plaintext highlighter-rouge">.beforeDOMLoaded</code> and <code class="language-plaintext highlighter-rouge">.afterDOMLoaded</code> properties that are strings that contain the script.</p>
+
+<p>```tsx title=”quartz/components/YourComponent.tsx”
+export default (() =&gt; {
+  function YourComponent() {
+    return <button id="btn">Click me</button>
+  }</p>
+
+<p>YourComponent.beforeDOM = `
+  console.log(“hello from before the page loads!”)
+  `</p>
+
+<p>YourComponent.afterDOM = `
+  document.getElementById(‘btn’).onclick = () =&gt; {
+    alert(‘button clicked!’)
+  }
+  `
+  return YourComponent
+}) satisfies QuartzComponentConstructor</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+&gt; [!hint]
+&gt; For those coming from React, Quartz components are different from React components in that it only uses JSX for templating and layout. Hooks like `useEffect`, `useState`, etc. are not rendered and other properties that accept functions like `onClick` handlers will not work. Instead, do it using a regular JS script that modifies the DOM element directly.
+
+As the names suggest, the `.beforeDOMLoaded` scripts are executed _before_ the page is done loading so it doesn't have access to any elements on the page. This is mostly used to prefetch any critical data.
+
+The `.afterDOMLoaded` script executes once the page has been completely loaded. This is a good place to setup anything that should last for the duration of a site visit (e.g. getting something saved from local storage).
+
+If you need to create an `afterDOMLoaded` script that depends on _page specific_ elements that may change when navigating to a new page, you can listen for the `"nav"` event that gets fired whenever a page loads (which may happen on navigation if [[SPA Routing]] is enabled).
+
+```ts
+document.addEventListener("nav", () =&gt; {
+  // do page specific logic here
+  // e.g. attach event listeners
+  const toggleSwitch = document.querySelector("#switch") as HTMLInputElement
+  toggleSwitch.addEventListener("change", switchTheme)
+  window.addCleanup(() =&gt; toggleSwitch.removeEventListener("change", switchTheme))
+})
+</code></pre></div></div>
+
+<p>It is best practice to track any event handlers via <code class="language-plaintext highlighter-rouge">window.addCleanup</code> to prevent memory leaks.
+This will get called on page navigation.</p>
+
+<h4 id="importing-code">Importing Code</h4>
+
+<p>Of course, it isn’t always practical (nor desired!) to write your code as a string literal in the component.</p>
+
+<p>Quartz supports importing component code through <code class="language-plaintext highlighter-rouge">.inline.ts</code> files.</p>
+
+<p>```tsx title=”quartz/components/YourComponent.tsx”
+// @ts-ignore: typescript doesn’t know about our inline bundling system
+// so we need to silence the error
+import script from “./scripts/graph.inline”</p>
+
+<p>export default (() =&gt; {
+  function YourComponent() {
+    return <button id="btn">Click me</button>
+  }</p>
+
+<p>YourComponent.afterDOM = script
+  return YourComponent
+}) satisfies QuartzComponentConstructor</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+```ts title="quartz/components/scripts/graph.inline.ts"
+// any imports here are bundled for the browser
+import * as d3 from "d3"
+
+document.getElementById("btn").onclick = () =&gt; {
+  alert("button clicked!")
+}
+</code></pre></div></div>
+
+<p>Additionally, like what is shown in the example above, you can import packages in <code class="language-plaintext highlighter-rouge">.inline.ts</code> files. This will be bundled by Quartz and included in the actual script.</p>
+
+<h3 id="using-a-component">Using a Component</h3>
+
+<p>After creating your custom component, re-export it in <code class="language-plaintext highlighter-rouge">quartz/components/index.ts</code>:</p>
+
+<p>```ts title=”quartz/components/index.ts” {4,10}
+import ArticleTitle from “./ArticleTitle”
+import Content from “./pages/Content”
+import Darkmode from “./Darkmode”
+import YourComponent from “./YourComponent”</p>
+
+<p>export { ArticleTitle, Content, Darkmode, YourComponent }</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+Then, you can use it like any other component in `quartz.layout.ts` via `Component.YourComponent()`. See the [[configuration#Layout|layout]] section for more details.
+
+As Quartz components are just functions that return React components, you can compositionally use them in other Quartz components.
+
+```tsx title="quartz/components/AnotherComponent.tsx"
+import YourComponent from "./YourComponent"
+
+export default (() =&gt; {
+  function AnotherComponent(props: QuartzComponentProps) {
+    return (
+      &lt;div&gt;
+        &lt;p&gt;It's nested!&lt;/p&gt;
+        &lt;YourComponent {...props} /&gt;
+      &lt;/div&gt;
+    )
+  }
+
+  return AnotherComponent
+}) satisfies QuartzComponentConstructor
+</code></pre></div></div>
+
+<blockquote>
+  <p>[!hint]
+Look in <code class="language-plaintext highlighter-rouge">quartz/components</code> for more examples of components in Quartz as reference for your own components!</p>
+</blockquote>
+</body></html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html><body>
+<p>Quartz uses <a href="https://katex.org/" rel="external nofollow noopener" target="_blank">Katex</a> by default to typeset both inline and block math expressions at build time.</p>
+
+<h2 id="syntax">Syntax</h2>
+
+<h3 id="block-math">Block Math</h3>
+
+<p>Block math can be rendered by delimiting math expression with <code class="language-plaintext highlighter-rouge">$$</code>.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$$
+f(x) = \int_{-\infty}^\infty
+    f\hat(\xi),e^{2 \pi i \xi x}
+    \,d\xi
+$$
+</code></pre></div></div>
+
+\[f(x) = \int_{-\infty}^\infty
+    f\hat(\xi),e^{2 \pi i \xi x}
+    \,d\xi\]
+
+\[\begin{aligned}
+a &amp;= b + c \\ &amp;= e + f \\
+\end{aligned}\]
+
+\[\begin{bmatrix}
+1 &amp; 2 &amp; 3 \\
+a &amp; b &amp; c
+\end{bmatrix}\]
+
+\[\begin{array}{rll}
+E \psi &amp;= H\psi &amp; \text{Expanding the Hamiltonian Operator} \\
+&amp;= -\frac{\hbar^2}{2m}\frac{\partial^2}{\partial x^2} \psi + \frac{1}{2}m\omega x^2 \psi &amp; \text{Using the ansatz $\psi(x) = e^{-kx^2}f(x)$, hoping to cancel the $x^2$ term} \\
+&amp;= -\frac{\hbar^2}{2m} [4k^2x^2f(x)+2(-2kx)f'(x) + f''(x)]e^{-kx^2} + \frac{1}{2}m\omega x^2 f(x)e^{-kx^2} &amp;\text{Removing the $e^{-kx^2}$ term from both sides} \\
+&amp; \Downarrow \\
+Ef(x) &amp;= -\frac{\hbar^2}{2m} [4k^2x^2f(x)-4kxf'(x) + f''(x)] + \frac{1}{2}m\omega x^2 f(x) &amp; \text{Choosing $k=\frac{im}{2}\sqrt{\frac{\omega}{\hbar}}$ to cancel the $x^2$ term, via $-\frac{\hbar^2}{2m}4k^2=\frac{1}{2}m \omega$} \\
+&amp;= -\frac{\hbar^2}{2m} [-4kxf'(x) + f''(x)] \\
+\end{array}\]
+
+<blockquote>
+  <p>[!warn]
+Due to limitations in the <a href="https://github.com/remarkjs/remark-math" rel="external nofollow noopener" target="_blank">underlying parsing library</a>, block math in Quartz requires the <code class="language-plaintext highlighter-rouge">$$</code> delimiters to be on newlines like above.</p>
+</blockquote>
+
+<h3 id="inline-math">Inline Math</h3>
+
+<p>Similarly, inline math can be rendered by delimiting math expression with a single <code class="language-plaintext highlighter-rouge">$</code>. For example, <code class="language-plaintext highlighter-rouge">$e^{i\pi} = -1$</code> produces $e^{i\pi} = -1$</p>
+
+<h3 id="escaping-symbols">Escaping symbols</h3>
+
+<p>There will be cases where you may have more than one <code class="language-plaintext highlighter-rouge">$</code> in a paragraph at once which may accidentally trigger MathJax/Katex.</p>
+
+<p>To get around this, you can escape the dollar sign by doing <code class="language-plaintext highlighter-rouge">\$</code> instead.</p>
+
+<p>For example:</p>
+
+<ul>
+  <li>Incorrect: <code class="language-plaintext highlighter-rouge">I have $1 and you have $2</code> produces I have $1 and you have $2</li>
+  <li>Correct: <code class="language-plaintext highlighter-rouge">I have \$1 and you have \$2</code> produces I have $1 and you have $2</li>
+</ul>
+
+<h3 id="using-mhchem">Using mhchem</h3>
+
+<p>Add the following import to the top of <code class="language-plaintext highlighter-rouge">quartz/plugins/transformers/latex.ts</code> (before all the other
+imports):</p>
+
+<p><code class="language-plaintext highlighter-rouge">ts title="quartz/plugins/transformers/latex.ts"
+import "katex/contrib/mhchem"
+</code></p>
+
+<h2 id="customization">Customization</h2>
+
+<table>
+  <tbody>
+    <tr>
+      <td>Latex parsing is a functionality of the [[plugins/Latex</td>
+      <td>Latex]] plugin. See the plugin page for customization options.</td>
+    </tr>
+  </tbody>
+</table>
+</body></html>

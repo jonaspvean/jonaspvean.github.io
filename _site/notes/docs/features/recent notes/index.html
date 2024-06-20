@@ -1,0 +1,20 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html><body>
+<p>Quartz can generate a list of recent notes based on some filtering and sorting criteria. Though this component isn’t included in any [[layout]] by default, you can add it by using <code class="language-plaintext highlighter-rouge">Component.RecentNotes</code> in <code class="language-plaintext highlighter-rouge">quartz.layout.ts</code>.</p>
+
+<h2 id="customization">Customization</h2>
+
+<ul>
+  <li>Changing the title from “Recent notes”: pass in an additional parameter to <code class="language-plaintext highlighter-rouge">Component.RecentNotes({ title: "Recent writing" })</code>
+</li>
+  <li>Changing the number of recent notes: pass in an additional parameter to <code class="language-plaintext highlighter-rouge">Component.RecentNotes({ limit: 5 })</code>
+</li>
+  <li>Show a ‘see more’ link: pass in an additional parameter to <code class="language-plaintext highlighter-rouge">Component.RecentNotes({ linkToMore: "tags/components" })</code>. This field should be a full slug to a page that exists.</li>
+  <li>Customize filtering: pass in an additional parameter to <code class="language-plaintext highlighter-rouge">Component.RecentNotes({ filter: someFilterFunction })</code>. The filter function should be a function that has the signature <code class="language-plaintext highlighter-rouge">(f: QuartzPluginData) =&gt; boolean</code>.</li>
+  <li>Customize sorting: pass in an additional parameter to <code class="language-plaintext highlighter-rouge">Component.RecentNotes({ sort: someSortFunction })</code>. By default, Quartz will sort by date and then tie break lexographically. The sort function should be a function that has the signature <code class="language-plaintext highlighter-rouge">(f1: QuartzPluginData, f2: QuartzPluginData) =&gt; number</code>. See <code class="language-plaintext highlighter-rouge">byDateAndAlphabetical</code> in <code class="language-plaintext highlighter-rouge">quartz/components/PageList.tsx</code> for an example.</li>
+  <li>Component: <code class="language-plaintext highlighter-rouge">quartz/components/RecentNotes.tsx</code>
+</li>
+  <li>Style: <code class="language-plaintext highlighter-rouge">quartz/components/styles/recentNotes.scss</code>
+</li>
+</ul>
+</body></html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html><body>
+<p>Quartz emits listing pages for any folders and tags you have.</p>
+
+<h2 id="folder-listings">Folder Listings</h2>
+
+<p>Quartz will generate an index page for all the pages under that folder. This includes any content that is multiple levels deep.</p>
+
+<p>Additionally, Quartz will also generate pages for subfolders. Say you have a note in a nested folder <code class="language-plaintext highlighter-rouge">content/abc/def/note.md</code>. Then Quartz would generate a page for all the notes under <code class="language-plaintext highlighter-rouge">abc</code> <em>and</em> a page for all the notes under <code class="language-plaintext highlighter-rouge">abc/def</code>.</p>
+
+<p>You can link to the folder listing by referencing its name, plus a trailing slash, like this: <code class="language-plaintext highlighter-rouge">[[advanced/]]</code> (results in [[advanced/]]).</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>By default, Quartz will title the page <code class="language-plaintext highlighter-rouge">Folder: &lt;folder name&gt;</code> and no description. You can override this by creating an <code class="language-plaintext highlighter-rouge">index.md</code> file in the folder with the <code class="language-plaintext highlighter-rouge">title</code> [[authoring content#Syntax</td>
+      <td>frontmatter]] field. Any content you write in this file will also be used in the folder description.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>For example, for the folder <code class="language-plaintext highlighter-rouge">content/posts</code>, you can add another file <code class="language-plaintext highlighter-rouge">content/posts/index.md</code> to add a specific description for it.</p>
+
+<h2 id="tag-listings">Tag Listings</h2>
+
+<p>Quartz will also create an index page for each unique tag in your vault and render a list of all notes with that tag.</p>
+
+<p>Quartz also supports tag hierarchies as well (e.g. <code class="language-plaintext highlighter-rouge">plugin/emitter</code>) and will also render a separate tag page for each level of the tag hierarchy. It will also create a default global tag index page at <code class="language-plaintext highlighter-rouge">/tags</code> that displays a list of all the tags in your Quartz.</p>
+
+<p>You can link to the tag listing by referencing its name with a <code class="language-plaintext highlighter-rouge">tag/</code> prefix, like this: <code class="language-plaintext highlighter-rouge">[[tags/plugin]]</code> (results in [[tags/plugin]]).</p>
+
+<p>As with folder listings, you can also provide a description and title for a tag page by creating a file for each tag. For example, if you wanted to create a custom description for the #component tag, you would create a file at <code class="language-plaintext highlighter-rouge">content/tags/component.md</code> with a title and description.</p>
+
+<h2 id="customization">Customization</h2>
+
+<p>The folder listings are a functionality of the [[FolderPage]] plugin, the tag listings of the [[TagPage]] plugin. See the plugin pages for customization options.</p>
+</body></html>
