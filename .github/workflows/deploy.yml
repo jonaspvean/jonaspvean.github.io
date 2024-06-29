@@ -90,4 +90,4 @@ jobs:
           clean: true
           clean-exclude: |
             notes
-            
+            .gitmodules
