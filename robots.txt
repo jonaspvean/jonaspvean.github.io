@@ -1,1 +1,1 @@
-Sitemap: https://jonaspvean.github.io/blank/sitemap.xml
+Sitemap: https://jonaspvean.github.io/sitemap.xml
