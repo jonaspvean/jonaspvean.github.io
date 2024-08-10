@@ -1,0 +1,63 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html><body>
+<p>Certain emitters may also output <a href="https://developer.mozilla.org/en-US/docs/Web/HTML" rel="external nofollow noopener" target="_blank">HTML</a> files. To enable easy customization, these emitters allow you to fully rearrange the layout of the page. The default page layouts can be found in <code class="language-plaintext highlighter-rouge">quartz.layout.ts</code>.</p>
+
+<p>Each page is composed of multiple different sections which contain <code class="language-plaintext highlighter-rouge">QuartzComponents</code>. The following code snippet lists all of the valid sections that you can add components to:</p>
+
+<p><code class="language-plaintext highlighter-rouge">typescript title="quartz/cfg.ts"
+export interface FullPageLayout {
+  head: QuartzComponent // single component
+  header: QuartzComponent[] // laid out horizontally
+  beforeBody: QuartzComponent[] // laid out vertically
+  pageBody: QuartzComponent // single component
+  left: QuartzComponent[] // vertical on desktop, horizontal on mobile
+  right: QuartzComponent[] // vertical on desktop, horizontal on mobile
+  footer: QuartzComponent // single component
+}
+</code></p>
+
+<p>These correspond to following parts of the page:</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>![[quartz layout.png</td>
+      <td>800]]</td>
+    </tr>
+  </tbody>
+</table>
+
+<blockquote>
+  <p>[!note]
+There are two additional layout fields that are <em>not</em> shown in the above diagram.</p>
+
+  <ol>
+    <li>
+<code class="language-plaintext highlighter-rouge">head</code> is a single component that renders the <code class="language-plaintext highlighter-rouge">&lt;head&gt;</code> <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/head" rel="external nofollow noopener" target="_blank">tag</a> in the HTML. This doesn’t appear visually on the page and is only is responsible for metadata about the document like the tab title, scripts, and styles.</li>
+    <li>
+<code class="language-plaintext highlighter-rouge">header</code> is a set of components that are laid out horizontally and appears <em>before</em> the <code class="language-plaintext highlighter-rouge">beforeBody</code> section. This enables you to replicate the old Quartz 3 header bar where the title, search bar, and dark mode toggle. By default, Quartz 4 doesn’t place any components in the <code class="language-plaintext highlighter-rouge">header</code>.</li>
+  </ol>
+</blockquote>
+
+<p>Quartz <strong>components</strong>, like plugins, can take in additional properties as configuration options. If you’re familiar with React terminology, you can think of them as Higher-order Components.</p>
+
+<p>See <a href="component.md">a list of all the components</a> for all available components along with their configuration options. You can also checkout the guide on [[creating components]] if you’re interested in further customizing the behaviour of Quartz.</p>
+
+<h3 id="style">Style</h3>
+
+<table>
+  <tbody>
+    <tr>
+      <td>Most meaningful style changes like colour scheme and font can be done simply through the [[configuration#General Configuration</td>
+      <td>general configuration]] options. However, if you’d like to make more involved style changes, you can do this by writing your own styles. Quartz 4, like Quartz 3, uses <a href="https://sass-lang.com/guide/" rel="external nofollow noopener" target="_blank">Sass</a> for styling.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>You can see the base style sheet in <code class="language-plaintext highlighter-rouge">quartz/styles/base.scss</code> and write your own in <code class="language-plaintext highlighter-rouge">quartz/styles/custom.scss</code>.</p>
+
+<blockquote>
+  <p>[!note]
+Some components may provide their own styling as well! For example, <code class="language-plaintext highlighter-rouge">quartz/components/Darkmode.tsx</code> imports styles from <code class="language-plaintext highlighter-rouge">quartz/components/styles/darkmode.scss</code>. If you’d like to customize styling for a specific component, double check the component definition to see how its styles are defined.</p>
+</blockquote>
+</body></html>
