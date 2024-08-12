@@ -8,7 +8,7 @@ middle_name: Pedersen
 last_name: Vean
 email: jonaspv@live.no
 description: > # the ">" symbol means to ignore newlines until "footer_text:"
-  A simple, whitespace theme for academics. Based on [*folio](https://github.com/bogoli/-folio) design.
+  Mathematical research and development with focus on partial differential equations, mathematical modelling and applied mathematics - in that order.
 footer_text: >
   Powered by <a href="https://jekyllrb.com/" target="_blank">Jekyll</a> with <a href="https://github.com/alshedivat/al-folio">al-folio</a> theme.
   Hosted by <a href="https://pages.github.com/" target="_blank">GitHub Pages</a>.
@@ -126,8 +126,8 @@ bing_site_verification: # out your bing-site-verification ID (Bing Webmaster)
 # Blog
 # -----------------------------------------------------------------------------
 
-blog_name: al-folio # blog_name will be displayed in your blog page
-blog_description: a simple whitespace theme for academics
+blog_name: The Nonlinear and Dispersed Blog # blog_name will be displayed in your blog page
+blog_description: A blog that tracks what I have been working on in mathematics and programming
 permalink: /blog/:year/:title/
 
 # Pagination
