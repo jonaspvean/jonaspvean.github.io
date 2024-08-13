@@ -1,0 +1,38 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html><body>
+<p>This plugin determines the created, modified, and published dates for a document using three potential data sources: frontmatter metadata, Git history, and the filesystem. See [[authoring content#Syntax]] for more information.</p>
+
+<blockquote>
+  <p>[!note]
+For information on how to add, remove or configure plugins, see the [[configuration#Plugins|Configuration]] page.</p>
+</blockquote>
+
+<p>This plugin accepts the following configuration options:</p>
+
+<ul>
+  <li>
+<code class="language-plaintext highlighter-rouge">priority</code>: The data sources to consult for date information. Highest priority first. Possible values are <code class="language-plaintext highlighter-rouge">"frontmatter"</code>, <code class="language-plaintext highlighter-rouge">"git"</code>, and <code class="language-plaintext highlighter-rouge">"filesystem"</code>. Defaults to <code class="language-plaintext highlighter-rouge">"frontmatter", "git", "filesystem"]</code>.</li>
+</ul>
+
+<blockquote>
+  <p>[!warning]
+If you rely on <code class="language-plaintext highlighter-rouge">git</code> for dates, make sure <code class="language-plaintext highlighter-rouge">defaultDateType</code> is set to <code class="language-plaintext highlighter-rouge">modified</code> in <code class="language-plaintext highlighter-rouge">quartz.config.ts</code>.</p>
+
+  <table>
+    <tbody>
+      <tr>
+        <td>Depending on how you [[hosting</td>
+        <td>host]] your Quartz, the <code class="language-plaintext highlighter-rouge">filesystem</code> dates of your local files may not match the final dates. In these cases, it may be better to use <code class="language-plaintext highlighter-rouge">git</code> or <code class="language-plaintext highlighter-rouge">frontmatter</code> to guarantee correct dates.</td>
+      </tr>
+    </tbody>
+  </table>
+</blockquote>
+
+<h2 id="api">API</h2>
+
+<ul>
+  <li>Category: Transformer</li>
+  <li>Function name: <code class="language-plaintext highlighter-rouge">Plugin.CreatedModifiedDate()</code>.</li>
+  <li>Source: <a href="https://github.com/jackyzha0/quartz/blob/v4/quartz/plugins/transformers/lastmod.ts" rel="external nofollow noopener" target="_blank"><code class="language-plaintext highlighter-rouge">quartz/plugins/transformers/lastmod.ts</code></a>.</li>
+</ul>
+</body></html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html><body>
+<p>This plugin provides support for <a href="https://github.com/kaushalmodi/ox-hugo" rel="external nofollow noopener" target="_blank">ox-hugo</a> compatibility. See [[OxHugo compatibility]] for more information.</p>
+
+<blockquote>
+  <p>[!note]
+For information on how to add, remove or configure plugins, see the [[configuration#Plugins|Configuration]] page.</p>
+</blockquote>
+
+<p>This plugin accepts the following configuration options:</p>
+
+<ul>
+  <li>
+<code class="language-plaintext highlighter-rouge">wikilinks</code>: If <code class="language-plaintext highlighter-rouge">true</code> (default), converts Hugo `` shortcodes to Quartz [[wikilinks]].</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">removePredefinedAnchor</code>: If <code class="language-plaintext highlighter-rouge">true</code> (default), strips predefined anchors from headings.</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">removeHugoShortcode</code>: If <code class="language-plaintext highlighter-rouge">true</code> (default), removes Hugo shortcode syntax (``) from the content.</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">replaceFigureWithMdImg</code>: If <code class="language-plaintext highlighter-rouge">true</code> (default), replaces <code class="language-plaintext highlighter-rouge">&lt;figure/&gt;</code> with <code class="language-plaintext highlighter-rouge">![]()</code>.</li>
+  <li>
+    <table>
+      <tbody>
+        <tr>
+          <td>
+<code class="language-plaintext highlighter-rouge">replaceOrgLatex</code>: If <code class="language-plaintext highlighter-rouge">true</code> (default), converts Org-mode [[features/Latex</td>
+          <td>Latex]] fragments to Quartz-compatible LaTeX wrapped in <code class="language-plaintext highlighter-rouge">$</code> (for inline) and <code class="language-plaintext highlighter-rouge">$$</code> (for block equations).</td>
+        </tr>
+      </tbody>
+    </table>
+  </li>
+</ul>
+
+<blockquote>
+  <p>[!warning]
+While you can use this together with [[ObsidianFlavoredMarkdown]], it’s not recommended because it might mutate the file in unexpected ways. Use with caution.</p>
+
+  <p>If you use <code class="language-plaintext highlighter-rouge">toml</code> frontmatter, make sure to configure the [[Frontmatter]] plugin accordingly. See [[OxHugo compatibility]] for an example.</p>
+</blockquote>
+
+<h2 id="api">API</h2>
+
+<ul>
+  <li>Category: Transformer</li>
+  <li>Function name: <code class="language-plaintext highlighter-rouge">Plugin.OxHugoFlavoredMarkdown()</code>.</li>
+  <li>Source: <a href="https://github.com/jackyzha0/quartz/blob/v4/quartz/plugins/transformers/oxhugofm.ts" rel="external nofollow noopener" target="_blank"><code class="language-plaintext highlighter-rouge">quartz/plugins/transformers/oxhugofm.ts</code></a>.</li>
+</ul>
+</body></html>

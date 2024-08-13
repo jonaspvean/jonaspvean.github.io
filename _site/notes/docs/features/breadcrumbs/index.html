@@ -1,0 +1,38 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html><body>
+<p>Breadcrumbs provide a way to navigate a hierarchy of pages within your site using a list of its parent folders.</p>
+
+<p>By default, the element at the very top of your page is the breadcrumb navigation bar (can also be seen at the top on this page!).</p>
+
+<h2 id="customization">Customization</h2>
+
+<p>Most configuration can be done by passing in options to <code class="language-plaintext highlighter-rouge">Component.Breadcrumbs()</code>.</p>
+
+<p>For example, here’s what the default configuration looks like:</p>
+
+<p><code class="language-plaintext highlighter-rouge">typescript title="quartz.layout.ts"
+Component.Breadcrumbs({
+  spacerSymbol: "❯", // symbol between crumbs
+  rootName: "Home", // name of first/root element
+  resolveFrontmatterTitle: true, // whether to resolve folder names through frontmatter titles
+  hideOnRoot: true, // whether to hide breadcrumbs on root `index.md` page
+  showCurrentPage: true, // whether to display the current page in the breadcrumbs
+})
+</code></p>
+
+<p>When passing in your own options, you can omit any or all of these fields if you’d like to keep the default value for that field.</p>
+
+<p>You can also adjust where the breadcrumbs will be displayed by adjusting the [[layout]] (moving <code class="language-plaintext highlighter-rouge">Component.Breadcrumbs()</code> up or down)</p>
+
+<p>Want to customize it even more?</p>
+
+<ul>
+  <li>Removing breadcrumbs: delete all usages of <code class="language-plaintext highlighter-rouge">Component.Breadcrumbs()</code> from <code class="language-plaintext highlighter-rouge">quartz.layout.ts</code>.</li>
+  <li>Component: <code class="language-plaintext highlighter-rouge">quartz/components/Breadcrumbs.tsx</code>
+</li>
+  <li>Style: <code class="language-plaintext highlighter-rouge">quartz/components/styles/breadcrumbs.scss</code>
+</li>
+  <li>Script: inline at <code class="language-plaintext highlighter-rouge">quartz/components/Breadcrumbs.tsx</code>
+</li>
+</ul>
+</body></html>
