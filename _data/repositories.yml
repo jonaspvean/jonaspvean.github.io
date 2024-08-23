@@ -1,12 +1,6 @@
 github_users:
-  - torvalds
-  - alshedivat
+  - jonaspvean
 
 github_repos:
-  - alshedivat/al-folio
-  - twbs/bootstrap
-  - jekyll/jekyll
-  - jquery/jquery
-  - FortAwesome/Font-Awesome
-  - jpswalsh/academicons
-  - mathjax/MathJax
+  - jonaspvean/jonaspvean.github.io
+  - jonaspvean/quartz-notes

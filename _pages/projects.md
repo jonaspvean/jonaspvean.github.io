@@ -2,10 +2,10 @@
 layout: page
 title: projects
 permalink: /projects/
-description: A growing collection of your cool projects.
+description: Since graduating in 2023 I have been working independently on the projects listed below. 
 nav: true
 nav_order: 3
-display_categories: [work, fun]
+display_categories: [Academic projects, Programming projects, Completed works]
 horizontal: false
 ---
 
