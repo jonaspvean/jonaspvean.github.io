@@ -37,6 +37,9 @@
     height:28px;
     width: 28px;
 }
+.socials a :hover{
+    fill: var(--global-theme-color);
+}
 
 .profile .caption {
     font-size: 20px;
