@@ -62,3 +62,8 @@ img.img-fluid.rounded.z-depth-1.small-centered {
     display: block;
     margin-inline: auto;
 }
+/* the following fix has probably been added in newer versions of al-folio */
+div.col-xs-2.cl-sm-2.col-md-2.text-center.date-column {
+    width: 75px;
+    transform: translateX(-15px) translateY(-5px);
+}

@@ -2,7 +2,7 @@
 layout: page
 title: projects
 permalink: /projects/
-description: Since graduating in 2023 I have been working independently on the projects listed below. 
+description: Since graduating in 2023 I have been working independently on the projects listed below. I have also included my theses and StudForsk project at the bottom. Keep in mind that some of these projects are still under construction, and therefore might have incomplete project pages. 
 nav: true
 nav_order: 3
 display_categories: [Academic projects, Programming projects, Completed works]
