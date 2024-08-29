@@ -7,11 +7,16 @@ The rest of the website is more-or-less entirely base al-folio as it was when I 
 
 ## Deployment
 In order to make Github Pages work in conjunction with Quartz 4.0, I had to turn off the default Jekyll-based deployment in favour of deploying only the static files. This then changes the required workflow in order to update the website:
-- first build the site (more specifically the Jekyll-built part) through the command `bundle exec jekyll build`
+- first build the site (more specifically the Jekyll-built part) through the command `bundle exec jekyll build` in the root folder
 - push and sync changes to origin master (this will then also trigger a static file push to the gh-pages branch)
+<br>
 If the Quartz portion of the site needs updating:
 - cd into the notes folder `/notes` and execute the build command `npx quartz build`
-- 
+- push changes into the origin main of the Quartz notes repository
+- cd back into the root folder
+- checkout the gh-pages branch
+- do `git pull` and then `git add .` followed by a commit and finally `git push`
+The final step should ensure a merge of the gh-pages branches which successfully updates the notes parts of the site.
 
 # al-folio (original README)
 
