@@ -62,5 +62,66 @@ Here is another caveat: I wanted the notes from Quartz to be synced with the web
 </div>
 These kinds of headaches would be plentiful and recurring whilst working on various stages of the project, simply because mixing manual deployment of static files and automatic deployment of files from the production branch eventually lead to merge conflicts, HEAD suddenly detaching and needing to be upstreamed to origin master/main, untracked files that mysteriously exist because of notes git submodule, and so on. I suppose in hindsight these were all good exercises in what to do when faced with cumbersome issues in git, but in the moment they felt a bit overwhelming. 
 
-I spent a good two months wrestling with git whilst trying to understand how to add Quartz notes to the combined site, and I finally got something working back in the middle of May. Unsurprisingly, I had to stop Jekyll from trying to convert *every* markdown file it could find, so I first tried to include a `.nojekyll` file in the notes directory of the master folder. This did not work, as the problem persisted when GitHub Actions automatically pushed from the production branch to the deployment branch.
+I spent a good two months wrestling with git whilst trying to understand how to add Quartz notes to the combined site, and I finally got something working back in the middle of May. Unsurprisingly, I had to stop Jekyll from trying to convert *every* markdown file it could find, so I first tried to include a `.nojekyll` file in the notes directory of the master folder. This did not work, as the problem persisted when GitHub Actions automatically pushed from the production branch to the deployment branch. Ultimately, the solution was to stop GitHub pages from building the files using Jekyll, and instead build the files locally, push to the master branch and then have the deployment process simply push the contents of the `_site/` folder into gh-pages. 
 
+<br>
+
+## Passing the Bar
+Finally, having successfully found a way of integrating and deploying the Quartz notes combined into the al-folio theme framework, I set out to finalize the look of the Quartz notes page by adding the navigation bar to the header of Quartz 4.0. Again, I found myself trivializing this task, thinking "oh, I just need to copy some CSS or SCSS contents, and add a few lines of HTML into some file in the Quartz directory. Should be pretty easy!". Immediately, I was faced with several roadblocks:
+
+1. the SCSS defining the NavBar element in al-folio was split between the file `_base.scss` and `bootstrap.min.css`, the latter of which was minimized and essentially unintelligble without further tinkering (and I did not know that you could *un*-minimize such files until some time later),
+2. I would need to write code for a `NavBar.tsx` component due to the build and render logic found within Quartz (simply put: a few lines of HTML needed to become lines of TypeScript code),
+3. the colour scheme from al-folio needed to be carried over and not overwrite anything in Quartz.
+
+In the end, the `NavBar.tsx` component became quite the interesting little side-project, since Quartz uses a predefined `QuartzComponent` type which needs to be used in order for the Quartz build procedure to include it. 
+
+```tsx
+import { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps } from "./types"
+import style from "./styles/navbar.scss"
+
+interface Options {
+    links: Record<string, string>
+}
+
+export default ((opts?: Options) => {
+    const NavBar: QuartzComponent = ({ displayClass } : QuartzComponentProps) => {
+    const links = opts?.links ?? [] 
+    return (
+    <header>
+        <nav id="navbar" class={`${ displayClass ?? ""}`+ " navbar navbar-light navbar-expand-sm fixed-top"} role="navigation">
+            <div class={`${ displayClass ?? ""}`+ " container"}>
+                <a class ={`${ displayClass ?? ""}`+ " navbar-brand title font-weight-lighter"} href ={`/`}>
+                        <span class="font-weight-bold">Jonas </span>
+
+                        Pedersen
+                        Vean
+                </a>
+            
+            <div class={`${ displayClass ?? ""}`+ " collapse navbar-collapse text-right"} id="navbarNav">
+                <ul class={`${ displayClass ?? ""}`+ " navbar-nav ml-auto flex-nowrap"}>
+                    {Object.entries(links).map(([title, href]) => (
+                    <li class={"nav-item" +` ${ (href==="#") ? " active " : ""}`}>
+                        <a class="nav-link" href = {href}> {title}
+                        </a>
+                    </li>
+                ))}
+                </ul>
+            </div>
+            </div>
+        </nav>
+    </header>
+    )
+    }
+    NavBar.css = style
+    return NavBar
+}) satisfies QuartzComponentConstructor
+```
+
+For instance, the `nav` element has CSS-stylings `navbar navbar-light navbar-expand-sm fixed-top` that fixes the NavBar to the top of the page at every instance, and furthermore defines some of the appearance to the outermost part of the NavBar. The CSS-styling comes from al-folio, and had to be retrieved in part from the minimized Bootstrap-file. 
+
+Something to note in the above snippet of code is that `NavBar.css = style` actually does not do anything, since the order of the CSS-files being loaded precludes the `style` folder from being loaded when used in a component placed in header – the styles are actually all loaded from the custom folder. Also, the inclusion of `${ displayClass ?? ""}` ensures that the NavBar becomes desktop-only when wrapped around the `DesktopOnly.tsx` component as it is included in the `quartz.layout.ts` file. 
+
+<br>
+
+## Conclusion
+To wrap up this long-winded post about something that had no right to take up several months of my life, I just wanted to express some gratitude for being able to learn about everything that made this website possible. In the end, I am reminded of the great privilige of being a mathematician: to solve problems. When faced with a bigger, more arduous problem – like trying to wrap your head around Git, Jekyll, TypeScript and Linux simulatenously for the first time – it is important to remind oneself that every problem will and can be solved eventually. Here's to solving more problems!

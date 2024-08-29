@@ -1,4 +1,19 @@
-# al-folio
+# Modified README 
+This is the master branch for my [website](jonaspvean.github.io) which is deployed and hosted to the web through GitHub Pages. I use the al-folio theme with some modifications:
+- the navbar has its dropdown menu removed and some pages removed entirely, furthermore the navbar was implemented as a component on the "research notes" page running on [Quartz 4.0](https://github.com/jonaspvean/quartz-notes)
+- the "about" page is changed almost entirely, with only the original "news" and "latest posts" tabs kept
+
+The rest of the website is more-or-less entirely base al-folio as it was when I forked the repository back in May 2024.
+
+## Deployment
+In order to make Github Pages work in conjunction with Quartz 4.0, I had to turn off the default Jekyll-based deployment in favour of deploying only the static files. This then changes the required workflow in order to update the website:
+- first build the site (more specifically the Jekyll-built part) through the command `bundle exec jekyll build`
+- push and sync changes to origin master (this will then also trigger a static file push to the gh-pages branch)
+If the Quartz portion of the site needs updating:
+- cd into the notes folder `/notes` and execute the build command `npx quartz build`
+- 
+
+# al-folio (original README)
 
 <div align="center">
 
